@@ -57,14 +57,27 @@
   .lbtn:focus-visible,.dbtn:focus-visible{outline:3px solid #fff;}
   #touch{position:fixed;inset:0;pointer-events:none;display:none;}
   body.touch #touch{display:block;}
-  #stick{position:absolute;left:18px;bottom:18px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.10);border:3px solid rgba(255,255,255,.35);pointer-events:auto;touch-action:none;}
-  #knob{position:absolute;left:41px;top:41px;width:42px;height:42px;border-radius:50%;background:rgba(244,233,207,.8);}
-  .tb{position:absolute;width:64px;height:64px;border-radius:50%;pointer-events:auto;touch-action:none;border:3px solid rgba(255,255,255,.5);font-family:'Press Start 2P',monospace;font-size:9px;color:#111;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;user-select:none;-webkit-user-select:none;}
-  #bA{right:22px;bottom:70px;background:var(--ball);}
-  #bB{right:96px;bottom:18px;background:var(--cream2);}
-  #bC{right:30px;bottom:150px;background:#8fd0e8;}
-  #bM{right:22px;top:150px;width:44px;height:44px;background:#f4e9cf;font-size:16px;}
-  #bQ{right:110px;bottom:100px;width:52px;height:52px;background:#e57cae;font-size:8px;}
+  #stick{position:fixed;left:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.4);pointer-events:none;touch-action:none;opacity:.32;transition:opacity .12s;}
+  #knob{position:absolute;left:39px;top:39px;width:42px;height:42px;border-radius:50%;background:rgba(244,233,207,.85);}
+  .tb{position:fixed;width:74px;height:74px;box-shadow:0 3px 0 rgba(0,0,0,.45);border-radius:50%;pointer-events:auto;touch-action:none;border:3px solid rgba(255,255,255,.5);font-family:'Press Start 2P',monospace;font-size:9px;color:#111;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;user-select:none;-webkit-user-select:none;}
+  #bA{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--ball);}
+  #bB{right:calc(102px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--cream2);}
+  #bC{right:calc(22px + env(safe-area-inset-right,0px));bottom:calc(174px + env(safe-area-inset-bottom,0px));background:#8fd0e8;}
+  #bQ{right:calc(112px + env(safe-area-inset-right,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));width:62px;height:62px;background:#e57cae;font-size:8px;}
+  #bM{right:calc(16px + env(safe-area-inset-right,0px));top:calc(74px + env(safe-area-inset-top,0px));width:52px;height:52px;background:#f4e9cf;font-size:16px;}
+  #bP{right:calc(16px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:52px;height:52px;background:#f4e9cf;font-size:16px;}
+  body.touch{overscroll-behavior:none;-webkit-touch-callout:none;}
+  body.touch #wrap,body.touch canvas,body.touch #ui{touch-action:none;}
+  body.touch .keys{display:none;}
+  body.touch #touchhelp{display:block;}
+  #touchhelp{display:none;font-size:19px;line-height:1.35;margin:12px 0 0;color:var(--cream2);}
+  @media (max-width:820px),(max-height:560px){
+    #overlay{align-items:flex-start;overflow:auto;-webkit-overflow-scrolling:touch;padding:calc(10px + env(safe-area-inset-top,0px)) 0 20px;}
+    .card{padding:14px 16px;}
+    body.touch .dogs,body.touch #intro{display:none;}
+    button.btn{font-size:14px;padding:18px 20px;width:100%;margin:10px 0 0;box-sizing:border-box;}
+    .lbtn,.dbtn{font-size:11px;padding:11px 10px;margin:3px 2px;}
+  }
   #msg{position:fixed;left:50%;bottom:6%;transform:translateX(-50%);max-width:88vw;font-size:22px;background:rgba(22,24,43,.85);border:3px solid var(--cream);padding:6px 14px;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center;}
   #msg.on{opacity:1;}
   @media (prefers-reduced-motion:reduce){#msg{transition:none;}}
@@ -81,6 +94,7 @@
   <div class="tb" id="bC">CORRER</div>
   <div class="tb" id="bM">♪</div>
   <div class="tb" id="bQ">SILBAR</div>
+  <div class="tb" id="bP">||</div>
 </div>
 <div id="overlay">
   <div class="card" id="card">
@@ -96,6 +110,7 @@
       <kbd>←↑↓→</kbd> / <kbd>WASD</kbd> mover &nbsp; <kbd>ESPACIO</kbd> poder &nbsp; <kbd>TAB</kbd> / <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> cambiar de perro &nbsp; <kbd>SHIFT</kbd> correr (Coco) &nbsp; <kbd>M</kbd> música &nbsp; <kbd>P</kbd> pausa &nbsp; <kbd>X</kbd> mapa &nbsp; <kbd>Q</kbd> silbato (junta a los 3)<br>
       <span id="intro">Salen de casa en Espejo 2035. Esquivá autos, comé cositas, llevalos a la plazoleta del Easy y al boulevard. Ojo con Ramón, el gato gris que reparte cachetazos, y con el Negro, el callejero de Ituzaingó que roba comida. El heladero del boulevard convida cucuruchos. Los huesos curan. Cruzá por la senda peatonal: los autos frenan.</span>
     </div>
+    <p id="touchhelp"><b>En el celular:</b> arrastrá el dedo en cualquier parte de la pantalla para caminar (aparece el joystick donde tocás). Botones a la derecha: <b>PODER</b>, <b>CAMBIAR</b> de perro, <b>CORRER</b>, <b>SILBAR</b> (junta a los 3), <b>♪</b> música y <b>||</b> pausa. Mejor con el teléfono acostado.</p>
     <div class="diffs"><span>Dificultad:</span> <button class="dbtn" data-d="tranqui">TRANQUI</button><button class="dbtn on" data-d="normal">NORMAL</button><button class="dbtn" data-d="pico">HORA PICO</button></div>
     <button class="btn" id="start">▶ SALIR A PASEAR</button>
     <button class="btn alt" id="share">COMPARTIR LINK</button>
@@ -955,26 +970,89 @@ addEventListener('keydown', e => {
   if (e.key === ' ') usePower();
 });
 addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-// táctil
-if (('ontouchstart' in window) || navigator.maxTouchPoints > 0) document.body.classList.add('touch');
+// ---------- táctil: joystick flotante en toda la pantalla ----------
+const TOUCH_UI = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 ||
+  (window.matchMedia && matchMedia('(pointer:coarse)').matches);
+if (TOUCH_UI) document.body.classList.add('touch');
 const stick = document.getElementById('stick'), knob = document.getElementById('knob');
-let stickId = null;
-stick.addEventListener('pointerdown', e => { stickId = e.pointerId; stick.setPointerCapture(e.pointerId); moveStick(e); });
-stick.addEventListener('pointermove', e => { if (e.pointerId === stickId) moveStick(e); });
-const endStick = e => { if (e.pointerId === stickId) { stickId = null; touch.dx = touch.dy = 0; knob.style.left = '41px'; knob.style.top = '41px'; } };
-stick.addEventListener('pointerup', endStick); stick.addEventListener('pointercancel', endStick);
-function moveStick(e) {
-  const r = stick.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
-  const l = Math.hypot(dx, dy), max = 45; if (l > max) { dx *= max / l; dy *= max / l; }
-  knob.style.left = (41 + dx) + 'px'; knob.style.top = (41 + dy) + 'px';
-  touch.dx = l < 8 ? 0 : dx / max; touch.dy = l < 8 ? 0 : dy / max;
+const SR = 60, KOFF = 39, MAXK = 44, DEAD = 9;
+let stickId = null, sox = 0, soy = 0;
+
+function parkStick() {
+  stick.style.left = '18px'; stick.style.top = 'auto';
+  stick.style.bottom = 'calc(18px + env(safe-area-inset-bottom,0px))';
+  stick.style.opacity = '.32';
+  knob.style.left = KOFF + 'px'; knob.style.top = KOFF + 'px';
 }
-const bindBtn = (id, on, off) => { const el = document.getElementById(id); el.addEventListener('pointerdown', e => { e.preventDefault(); on(); }); el.addEventListener('pointerup', () => off && off()); el.addEventListener('pointercancel', () => off && off()); };
+function showStick(x, y) {
+  sox = x; soy = y;
+  stick.style.left = (x - SR) + 'px'; stick.style.top = (y - SR) + 'px';
+  stick.style.bottom = 'auto'; stick.style.opacity = '.85';
+  knob.style.left = KOFF + 'px'; knob.style.top = KOFF + 'px';
+  touch.dx = touch.dy = 0;
+}
+function dragStick(x, y) {
+  let dx = x - sox, dy = y - soy;
+  const l = Math.hypot(dx, dy) || 1;
+  let kx = dx, ky = dy;
+  if (l > MAXK) { kx = dx * MAXK / l; ky = dy * MAXK / l; }
+  knob.style.left = (KOFF + kx) + 'px'; knob.style.top = (KOFF + ky) + 'px';
+  if (l < DEAD) { touch.dx = touch.dy = 0; return; }
+  const n = Math.min(1, l / MAXK);
+  touch.dx = (dx / l) * n; touch.dy = (dy / l) * n;
+}
+function dropStick() { stickId = null; touch.dx = touch.dy = 0; parkStick(); }
+parkStick();
+
+function onUI(t) {
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  return !!(el && el.closest && el.closest('.tb,.btn,.lbtn,.dbtn,#overlay'));
+}
+addEventListener('touchstart', e => {
+  if (state !== 'play') return;
+  for (const t of e.changedTouches) {
+    if (onUI(t)) continue;
+    if (stickId !== null) continue;
+    stickId = t.identifier; showStick(t.clientX, t.clientY);
+    if (e.cancelable) e.preventDefault();
+  }
+}, { passive: false });
+addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) if (t.identifier === stickId) {
+    dragStick(t.clientX, t.clientY);
+    if (e.cancelable) e.preventDefault();
+  }
+}, { passive: false });
+const endTouch = e => { for (const t of e.changedTouches) if (t.identifier === stickId) dropStick(); };
+addEventListener('touchend', endTouch, { passive: true });
+addEventListener('touchcancel', endTouch, { passive: true });
+addEventListener('blur', dropStick);
+
+const bindBtn = (id, on, off) => {
+  const el = document.getElementById(id); if (!el) return;
+  const go = e => { if (e.cancelable) e.preventDefault(); e.stopPropagation(); on(); };
+  const up = e => { if (e && e.cancelable) e.preventDefault(); if (off) off(); };
+  el.addEventListener('touchstart', go, { passive: false });
+  el.addEventListener('touchend', up, { passive: false });
+  el.addEventListener('touchcancel', up, { passive: true });
+  el.addEventListener('mousedown', go);
+  el.addEventListener('mouseup', up);
+};
 bindBtn('bA', () => { if (state === 'play') usePower(); });
 bindBtn('bB', () => { if (state === 'play') switchDog((active + 1) % 3); });
 bindBtn('bC', () => touch.c = true, () => touch.c = false);
-bindBtn('bM', () => { if (state === 'play') Music.toggle(); });
-bindBtn('bQ', () => { if (state === 'play') dispatchEvent(new KeyboardEvent('keydown', { key: 'q' })); });
+bindBtn('bM', () => { const m = Music.toggle(); say(m ? 'Música silenciada' : 'Música: ¡dale!', 1.2); });
+bindBtn('bQ', () => {
+  if (state !== 'play') return;
+  whistle = 3; const d = dogs[active];
+  floatText(d.x, d.y - .6, '¡fiuuu-fiu!', '#fff');
+  beep(1400, .12, 'square', .06, 600); setTimeout(() => beep(1800, .15, 'square', .06, -700), 130);
+  rings.push({ x: d.x, y: d.y, t: 0 });
+});
+bindBtn('bP', () => {
+  if (state === 'play') { state = 'pause'; dropStick(); }
+  else if (state === 'pause') state = 'play';
+});
 
 function switchDog(i) { if (i === active) return; active = i; trail.length = 0; beep(700, .04); say(`Ahora manejás a ${dogs[i].name}`, 1.2); }
 
@@ -1891,10 +1969,15 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 function fit() {
-  const sc = Math.min(innerWidth / VW, innerHeight / VH);
+  const vw = (window.visualViewport && visualViewport.width) || innerWidth;
+  const vh = (window.visualViewport && visualViewport.height) || innerHeight;
+  const sc = Math.min(vw / VW, vh / VH);
   cv.style.width = (VW * sc) + 'px'; cv.style.height = (VH * sc) + 'px';
 }
-addEventListener('resize', fit); fit();
+addEventListener('resize', fit);
+addEventListener('orientationchange', () => { fit(); setTimeout(fit, 350); });
+if (window.visualViewport) visualViewport.addEventListener('resize', fit);
+fit();
 
 // ---------- pantallas ----------
 const overlay = document.getElementById('overlay'), card = document.getElementById('card');
@@ -1903,7 +1986,13 @@ document.getElementById('best').innerHTML = topHtml() || (best ? `Mejor paseo: $
 document.querySelectorAll('.dbtn').forEach(b => { b.classList.toggle('on', DIFFS[b.dataset.d] === DIFF); b.onclick = () => { document.querySelectorAll('.dbtn').forEach(x => x.classList.remove('on')); b.classList.add('on'); DIFF = DIFFS[b.dataset.d]; try { localStorage.setItem('chocolandia_diff', b.dataset.d); } catch (e) { } beep(600, .04); }; });
 document.querySelectorAll('.lbtn').forEach(b => { b.classList.toggle('on', b.dataset.l === LEVEL_ID); b.onclick = () => { if (b.dataset.l === LEVEL_ID) return; try { localStorage.setItem('chocolandia_level', b.dataset.l); } catch (e) { } beep(600, .04); location.reload(); }; });
 document.getElementById('levelsub').textContent = `${LEVEL.name}: ${LEVEL.sub}`; if (LEVEL.txt.intro) document.getElementById('intro').textContent = LEVEL.txt.intro;
-document.getElementById('start').onclick = () => { overlay.hidden = true; state = 'play'; hearts = DIFF.hearts; DAY = DIFF.day; TRAFFIC = DIFF.traffic; Music.start(); say(LEVEL.txt.start, 5); };
+function goFullscreen() {
+  if (!document.body.classList.contains('touch')) return;
+  const el = document.documentElement;
+  try { const f = el.requestFullscreen || el.webkitRequestFullscreen; if (f) { const p = f.call(el); if (p && p.catch) p.catch(() => { }); } } catch (e) { }
+  try { if (screen.orientation && screen.orientation.lock) { const p = screen.orientation.lock('landscape'); if (p && p.catch) p.catch(() => { }); } } catch (e) { }
+}
+document.getElementById('start').onclick = () => { overlay.hidden = true; state = 'play'; hearts = DIFF.hearts; DAY = DIFF.day; TRAFFIC = DIFF.traffic; goFullscreen(); Music.start(); say(LEVEL.txt.start, 5); setTimeout(fit, 120); };
 function shareLink() {
   const url = location.href;
   const txt = score > 0 ? `Hice ${score} puntos paseando a Vilma, Tota y Coco por ${LEVEL.short}. ¿Me ganás?` : '¡Jugá con Vilma, Tota y Coco por Mendoza!';
