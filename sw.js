@@ -1,6 +1,6 @@
 // Chocolandia service worker - cache primero, actualiza en segundo plano.
 // Subi la version (v1 -> v2) cada vez que publiques una version nueva del juego.
-const CACHE = 'chocolandia-v1';
+const CACHE = 'chocolandia-v2';
 const ASSETS = [
   './',
   './index.html',
