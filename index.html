@@ -117,7 +117,9 @@
     <p id="touchhelp"><b>En el celular:</b> arrastrá el dedo en cualquier parte de la pantalla para caminar (aparece el joystick donde tocás). Botones a la derecha: <b>PODER</b>, <b>CAMBIAR</b> de perro, <b>CORRER</b>, <b>SILBAR</b> (junta a los 3), <b>♪</b> música y <b>||</b> pausa. Mejor con el teléfono acostado.</p>
     <div class="diffs"><span>Dificultad:</span> <button class="dbtn" data-d="tranqui">TRANQUI</button><button class="dbtn on" data-d="normal">NORMAL</button><button class="dbtn" data-d="pico">HORA PICO</button></div>
     <button class="btn" id="start">▶ SALIR A PASEAR</button>
+    <button class="btn alt" id="sound">🔊 PROBAR SONIDO</button>
     <button class="btn alt" id="share">COMPARTIR LINK</button>
+    <p class="sub" id="audiostat" style="margin-top:10px;font-size:17px"></p>
     <p class="sub" id="best" style="margin-top:12px;font-size:18px"></p>
   </div>
 </div>
@@ -152,18 +154,20 @@ function acGet() {
 // Destraba el audio en Android/iOS: hay que crear y arrancar el contexto
 // dentro de un gesto del usuario, y en iPhone ademas reproducir un <audio>
 // para que el sonido salga aunque el telefono este en silencio.
+const IS_IOS = /iP(hone|od|ad)/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 function unlockAudio() {
   try {
     const ac = acGet();
     if (ac.state === 'suspended' && ac.resume) { const p = ac.resume(); if (p && p.catch) p.catch(() => { }); }
     const b = ac.createBuffer(1, 1, 22050), src = ac.createBufferSource();
     src.buffer = b; src.connect(ac.destination); src.start(0);
-    if (!silentEl) {
+    if (IS_IOS && !silentEl) {
       silentEl = new Audio(SILENT_SRC);
       silentEl.loop = true; silentEl.volume = .01;
       silentEl.setAttribute('playsinline', ''); silentEl.setAttribute('webkit-playsinline', '');
     }
-    const pr = silentEl.play(); if (pr && pr.catch) pr.catch(() => { });
+    if (silentEl) { const pr = silentEl.play(); if (pr && pr.catch) pr.catch(() => { }); }
     audioReady = ac.state === 'running';
   } catch (e) { }
 }
@@ -931,7 +935,13 @@ const Music = (() => {
   const BASS = [0, 0, 7, 0, 12, 0, 7, 5];
   const ARP = [0, 4, 7, 12];
   let ac = null, master = null, mel = null, next = 0, step = 0, on = false, muted = false, timer = null, noiseBuf = null, round = 0, theme = 'day';
-  try { muted = localStorage.getItem('chocolandia_mute') === '1'; } catch (e) { }
+  try {
+    // los builds viejos podian dejar el juego mudo sin que se notara: se limpia una sola vez
+    if (localStorage.getItem('chocolandia_mutefix') !== '1') {
+      localStorage.setItem('chocolandia_mute', '0'); localStorage.setItem('chocolandia_mutefix', '1');
+    }
+    muted = localStorage.getItem('chocolandia_mute') === '1';
+  } catch (e) { }
   function ctxInit() {
     AC = AC || new (window.AudioContext || window.webkitAudioContext)(); ac = AC;
     if (!master) {
@@ -988,11 +998,19 @@ const Music = (() => {
   }
   function start() { ctxInit(); if (ac.state === 'suspended') { const p = ac.resume(); if (p && p.catch) p.catch(() => { }); } on = true; next = ac.currentTime + .05; step = 0; }
   function resume() { if (!ac) return; if (ac.state === 'suspended') { const p = ac.resume(); if (p && p.catch) p.catch(() => { }); } if (!on) start(); }
+  function forceOn() {
+    ctxInit(); muted = false;
+    try { localStorage.setItem('chocolandia_mute', '0'); } catch (e) { }
+    if (master) master.gain.setTargetAtTime(.5, ac.currentTime, .05);
+    if (ac.state === 'suspended') { const p = ac.resume(); if (p && p.catch) p.catch(() => { }); }
+    on = true; next = ac.currentTime + .05; step = 0;
+  }
+  function acState() { return ac ? ac.state : 'sin contexto'; }
   function isOn() { return !!(ac && ac.state === 'running' && on && !muted); }
   function stop() { on = false; }
   function toggle() { muted = !muted; try { localStorage.setItem('chocolandia_mute', muted ? '1' : '0'); } catch (e) { } if (master) master.gain.setTargetAtTime(muted ? 0 : .5, ac.currentTime, .05); return muted; }
   function fanfare(win) { ctxInit(); const t = ac.currentTime; (win ? [62, 66, 69, 74, 78, 81, 86, 0, 86, 86] : [62, 59, 55, 50]).forEach((m, i) => { if (m) tone(N(m), t + i * .12, .28, 'square', .12, mel || master); }); if (win) [50, 57, 62].forEach((m, i) => tone(N(m), t + 1.2, 1.2, 'triangle', .15, master)); }
-  return { start, stop, toggle, tick, fanfare, resume, isOn, isMuted: () => muted };
+  return { start, stop, toggle, tick, fanfare, resume, isOn, forceOn, acState, isMuted: () => muted };
 })();
 
 // ---------- entrada ----------
@@ -2077,6 +2095,19 @@ function checkRotation() {
 addEventListener('orientationchange', () => { checkRotation(); setTimeout(checkRotation, 400); });
 addEventListener('resize', checkRotation);
 document.addEventListener('fullscreenchange', () => setTimeout(checkRotation, 200));
+const audiostat = document.getElementById('audiostat');
+document.getElementById('sound').onclick = () => {
+  unlockAudio(); Music.forceOn();
+  const el = document.getElementById('bM'); if (el) el.textContent = '♪';
+  beep(660, .12, 'square', .12); setTimeout(() => beep(880, .14, 'square', .12), 150);
+  setTimeout(() => beep(1175, .22, 'square', .12), 320);
+  setTimeout(() => {
+    const st = Music.acState();
+    audiostat.textContent = st === 'running'
+      ? '✔ El sonido está activo. Si igual no escuchás nada, subí el volumen MULTIMEDIA con las teclas de volumen del costado mientras suena (en el celular las teclas cambian el timbre si no hay nada sonando).'
+      : '✖ El navegador no dejó activar el audio (estado: ' + st + '). Tocá el botón otra vez.';
+  }, 500);
+};
 document.getElementById('start').onclick = () => {
   unlockAudio();
   overlay.hidden = true; state = 'play';
@@ -2084,7 +2115,7 @@ document.getElementById('start').onclick = () => {
   goFullscreen(); syncTouchLabels();
   Music.start(); Music.resume();
   const el = document.getElementById('bM'); if (el) el.textContent = Music.isMuted() ? '♪✕' : '♪';
-  if (Music.isMuted()) say('La música está en silencio: tocá ♪ para escucharla', 3);
+  if (Music.isMuted()) say('Música en silencio: tocá ♪ arriba a la derecha', 3);
   else say(LEVEL.txt.start, 5);
   setTimeout(() => { fit(); checkRotation(); Music.resume(); }, 150);
 };
